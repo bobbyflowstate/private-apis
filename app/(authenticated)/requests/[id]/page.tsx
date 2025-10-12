@@ -26,7 +26,7 @@ export default async function RequestDetailPage({ params }: RequestDetailPagePro
           <RequestConfiguration request={data} />
         </Suspense>
         <Suspense fallback={<div className="rounded-xl border border-slate-800 bg-slate-900/40 p-6">Loading execution log...</div>}>
-          <RequestExecutionPanel requestId={data.id} parameters={data.request_parameters ?? []} />
+          <RequestExecutionPanel request={data} />
         </Suspense>
       </div>
     </div>

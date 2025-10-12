@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSupabase } from "@/lib/hooks/use-supabase";
 import Link from "next/link";
-import { ArrowLeftIcon, PlusIcon, XIcon } from "lucide-react";
+import { ArrowLeftIcon, PlusIcon, XIcon, Loader2 } from "lucide-react";
 
 interface KeyValuePair {
   id: string;
@@ -13,10 +13,17 @@ interface KeyValuePair {
   promptAtRuntime: boolean;
 }
 
-export default function NewRequestPage() {
+interface EditRequestPageProps {
+  params: {
+    id: string;
+  };
+}
+
+export default function EditRequestPage({ params }: EditRequestPageProps) {
   const router = useRouter();
   const supabase = useSupabase();
   const [loading, setLoading] = useState(false);
+  const [fetchingRequest, setFetchingRequest] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
@@ -37,6 +44,103 @@ export default function NewRequestPage() {
   
   const [body, setBody] = useState("");
   const [bodyPromptAtRuntime, setBodyPromptAtRuntime] = useState(false);
+
+  // Fetch existing request data
+  useEffect(() => {
+    async function fetchRequest() {
+      try {
+        const { data, error: fetchError } = await supabase
+          .from("api_requests")
+          .select("*")
+          .eq("id", params.id)
+          .single();
+
+        if (fetchError) throw fetchError;
+
+        if (data) {
+          setFormData({
+            name: data.name,
+            description: data.description || "",
+            method: data.method,
+            url: data.url,
+            timeout_ms: String(data.timeout_ms || 10000),
+          });
+
+          // Load headers
+          const headersArray: KeyValuePair[] = [];
+          if (data.headers) {
+            Object.entries(data.headers as Record<string, string>).forEach(([key, value]) => {
+              headersArray.push({
+                id: crypto.randomUUID(),
+                key,
+                value,
+                promptAtRuntime: false,
+              });
+            });
+          }
+          // Add runtime headers
+          if (data.runtime_prompts?.headers) {
+            (data.runtime_prompts.headers as string[]).forEach((key) => {
+              headersArray.push({
+                id: crypto.randomUUID(),
+                key,
+                value: "",
+                promptAtRuntime: true,
+              });
+            });
+          }
+          if (headersArray.length === 0) {
+            headersArray.push({ id: crypto.randomUUID(), key: "", value: "", promptAtRuntime: false });
+          }
+          setHeaders(headersArray);
+
+          // Load query params
+          const queryParamsArray: KeyValuePair[] = [];
+          if (data.query_params) {
+            Object.entries(data.query_params as Record<string, string>).forEach(([key, value]) => {
+              queryParamsArray.push({
+                id: crypto.randomUUID(),
+                key,
+                value,
+                promptAtRuntime: false,
+              });
+            });
+          }
+          // Add runtime query params
+          if (data.runtime_prompts?.queryParams) {
+            (data.runtime_prompts.queryParams as string[]).forEach((key) => {
+              queryParamsArray.push({
+                id: crypto.randomUUID(),
+                key,
+                value: "",
+                promptAtRuntime: true,
+              });
+            });
+          }
+          if (queryParamsArray.length === 0) {
+            queryParamsArray.push({ id: crypto.randomUUID(), key: "", value: "", promptAtRuntime: false });
+          }
+          setQueryParams(queryParamsArray);
+
+          // Load body
+          if (data.body_template) {
+            setBody(JSON.stringify(data.body_template, null, 2));
+            setBodyPromptAtRuntime(false);
+          } else if (data.runtime_prompts?.body) {
+            setBody("");
+            setBodyPromptAtRuntime(true);
+          }
+        }
+
+        setFetchingRequest(false);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to fetch request");
+        setFetchingRequest(false);
+      }
+    }
+
+    fetchRequest();
+  }, [params.id, supabase]);
 
   // Helper functions for key-value pairs
   function addHeader() {
@@ -79,7 +183,7 @@ export default function NewRequestPage() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        setError("You must be logged in to create a request");
+        setError("You must be logged in to update a request");
         setLoading(false);
         return;
       }
@@ -134,10 +238,9 @@ export default function NewRequestPage() {
         runtimePrompts.body = true;
       }
 
-      const { data, error: insertError } = await supabase
+      const { error: updateError } = await supabase
         .from("api_requests")
-        .insert({
-          owner_id: user.id,
+        .update({
           name: formData.name,
           description: formData.description || null,
           method: formData.method,
@@ -147,36 +250,45 @@ export default function NewRequestPage() {
           query_params: Object.keys(queryParamsObj).length > 0 ? queryParamsObj : null,
           body_template: bodyTemplate,
           runtime_prompts: Object.keys(runtimePrompts).length > 0 ? runtimePrompts : null,
+          updated_at: new Date().toISOString(),
         })
-        .select()
-        .single();
+        .eq("id", params.id);
 
-      if (insertError) {
-        setError(insertError.message);
+      if (updateError) {
+        setError(updateError.message);
         setLoading(false);
         return;
       }
 
-      router.push(`/requests/${data.id}`);
+      router.push(`/requests/${params.id}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create request");
+      setError(err instanceof Error ? err.message : "Failed to update request");
       setLoading(false);
     }
+  }
+
+  if (fetchingRequest) {
+    return (
+      <div className="mx-auto flex w-full max-w-4xl flex-col items-center justify-center gap-4 py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-brand-500" />
+        <p className="text-sm text-slate-400">Loading request...</p>
+      </div>
+    );
   }
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
       <header className="space-y-2">
         <Link
-          href="/requests"
+          href={`/requests/${params.id}`}
           className="inline-flex items-center gap-2 text-sm text-slate-400 transition hover:text-slate-200"
         >
           <ArrowLeftIcon className="h-4 w-4" />
-          Back to Requests
+          Back to Request
         </Link>
-        <h1 className="text-3xl font-semibold tracking-tight">Create New Request</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">Edit Request</h1>
         <p className="text-sm text-slate-400">
-          Configure a new API endpoint to execute from your dashboard.
+          Update your API endpoint configuration.
         </p>
       </header>
 
@@ -263,7 +375,7 @@ export default function NewRequestPage() {
               placeholder="https://api.example.com/endpoint"
             />
             <p className="mt-1 text-xs text-slate-500">
-              Tip: Use {"{{"} paramName {"}"} for dynamic values
+              Tip: Use {"{{"} SECRET_NAME {"}"} for secrets from Vault
             </p>
           </div>
         </div>
@@ -283,7 +395,7 @@ export default function NewRequestPage() {
           </div>
           
           <div className="space-y-3">
-            {headers.map((header, index) => (
+            {headers.map((header) => (
               <div key={header.id} className="space-y-2">
                 <div className="flex gap-2">
                   <input
@@ -403,7 +515,7 @@ export default function NewRequestPage() {
               disabled={bodyPromptAtRuntime}
               rows={10}
               className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 font-mono text-sm text-slate-100 placeholder:text-slate-600 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500/50 disabled:cursor-not-allowed disabled:opacity-50"
-              placeholder={bodyPromptAtRuntime ? 'Will prompt for body at runtime' : '{\n  "key": "value",\n  "dynamic": "{{paramName}}"\n}'}
+              placeholder={bodyPromptAtRuntime ? 'Will prompt for body at runtime' : '{\n  "key": "value",\n  "dynamic": "{{SECRET_NAME}}"\n}'}
             />
             <p className="text-xs text-slate-500">
               {bodyPromptAtRuntime 
@@ -425,10 +537,10 @@ export default function NewRequestPage() {
             disabled={loading}
             className="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-400 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {loading ? "Creating..." : "Create Request"}
+            {loading ? "Saving..." : "Save Changes"}
           </button>
           <Link
-            href="/requests"
+            href={`/requests/${params.id}`}
             className="rounded-lg border border-slate-700 bg-slate-900 px-4 py-2 text-sm font-medium text-slate-300 transition hover:border-slate-500 hover:text-slate-100"
           >
             Cancel

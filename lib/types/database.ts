@@ -183,6 +183,11 @@ export interface Database {
           http_status: number | null;
           duration_ms: number | null;
           response_excerpt: string | null;
+          response_body: string | null;
+          response_headers: Json | null;
+          request_headers: Json | null;
+          request_body: string | null;
+          final_url: string | null;
           error_message: string | null;
           executed_at: string;
           parameters_used: Json | null;
@@ -197,6 +202,11 @@ export interface Database {
           http_status?: number | null;
           duration_ms?: number | null;
           response_excerpt?: string | null;
+          response_body?: string | null;
+          response_headers?: Json | null;
+          request_headers?: Json | null;
+          request_body?: string | null;
+          final_url?: string | null;
           error_message?: string | null;
           executed_at?: string;
           parameters_used?: Json | null;
@@ -211,6 +221,11 @@ export interface Database {
           http_status?: number | null;
           duration_ms?: number | null;
           response_excerpt?: string | null;
+          response_body?: string | null;
+          response_headers?: Json | null;
+          request_headers?: Json | null;
+          request_body?: string | null;
+          final_url?: string | null;
           error_message?: string | null;
           executed_at?: string;
           parameters_used?: Json | null;

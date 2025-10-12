@@ -4,6 +4,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.43.1";
 interface ExecutePayload {
   requestId: string;
   parameters: Record<string, unknown>;
+  runtimeHeaders?: Record<string, string>;
+  runtimeQueryParams?: Record<string, string>;
+  runtimeBody?: any;
 }
 
 interface ApiRequest {
@@ -61,6 +64,25 @@ function extractPlaceholders(templates: string[]): Set<string> {
   }
   
   return placeholders;
+}
+
+/**
+ * Redacts secret values from a string by replacing them with [REDACTED]
+ */
+function redactSecrets(text: string, secrets: Record<string, string>): string {
+  let redacted = text;
+  
+  // Replace each secret value with [REDACTED]
+  Object.entries(secrets).forEach(([key, value]) => {
+    if (value) {
+      // Escape special regex characters in the secret value
+      const escapedValue = value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(escapedValue, 'g');
+      redacted = redacted.replace(regex, `[REDACTED:${key}]`);
+    }
+  });
+  
+  return redacted;
 }
 
 /**
@@ -197,22 +219,36 @@ serve(async (req) => {
       secrets
     );
 
-    // Add query parameters if present
-    if (apiRequest.query_params) {
+    // Add query parameters if present (merge static + runtime)
+    if (apiRequest.query_params || payload.runtimeQueryParams) {
       const url = new URL(targetUrl);
-      Object.entries(apiRequest.query_params).forEach(([key, value]) => {
-        const substitutedValue = substitutePlaceholders(
-          value, 
-          payload.parameters, 
-          secrets
-        );
-        url.searchParams.set(key, substitutedValue);
-      });
+      
+      // First add static query params with substitution
+      if (apiRequest.query_params) {
+        Object.entries(apiRequest.query_params).forEach(([key, value]) => {
+          const substitutedValue = substitutePlaceholders(
+            value, 
+            payload.parameters, 
+            secrets
+          );
+          url.searchParams.set(key, substitutedValue);
+        });
+      }
+      
+      // Then add/override with runtime query params
+      if (payload.runtimeQueryParams) {
+        Object.entries(payload.runtimeQueryParams).forEach(([key, value]) => {
+          url.searchParams.set(key, value);
+        });
+      }
+      
       targetUrl = url.toString();
     }
 
-    // Build headers
+    // Build headers (merge static + runtime)
     const requestHeaders = new Headers();
+    
+    // First add static headers with substitution
     if (apiRequest.headers) {
       Object.entries(apiRequest.headers).forEach(([key, value]) => {
         const substitutedValue = substitutePlaceholders(
@@ -223,20 +259,35 @@ serve(async (req) => {
         requestHeaders.set(key, substitutedValue);
       });
     }
+    
+    // Then add/override with runtime headers
+    if (payload.runtimeHeaders) {
+      Object.entries(payload.runtimeHeaders).forEach(([key, value]) => {
+        requestHeaders.set(key, value);
+      });
+    }
 
-    // Build request body
+    // Build request body (runtime takes precedence)
     let requestBody: string | undefined;
-    if (apiRequest.body_template && apiRequest.method !== "GET") {
-      const bodyString = JSON.stringify(apiRequest.body_template);
-      const substitutedBody = substitutePlaceholders(
-        bodyString, 
-        payload.parameters, 
-        secrets
-      );
-      requestBody = substitutedBody;
+    if (apiRequest.method !== "GET") {
+      if (payload.runtimeBody) {
+        // Use runtime body if provided
+        requestBody = typeof payload.runtimeBody === "string" 
+          ? payload.runtimeBody 
+          : JSON.stringify(payload.runtimeBody);
+      } else if (apiRequest.body_template) {
+        // Use static body template with substitution
+        const bodyString = JSON.stringify(apiRequest.body_template);
+        const substitutedBody = substitutePlaceholders(
+          bodyString, 
+          payload.parameters, 
+          secrets
+        );
+        requestBody = substitutedBody;
+      }
       
-      // Set content-type if not already set
-      if (!requestHeaders.has("content-type")) {
+      // Set content-type if not already set and we have a body
+      if (requestBody && !requestHeaders.has("content-type")) {
         requestHeaders.set("content-type", "application/json");
       }
     }
@@ -299,7 +350,32 @@ serve(async (req) => {
           ? "error" 
           : "failure";
 
-    // Log execution to database
+    // Convert response headers to JSON object
+    const responseHeaders: Record<string, string> = {};
+    response.headers.forEach((value, key) => {
+      responseHeaders[key] = value;
+    });
+
+    // Convert request headers to JSON object and REDACT SECRETS
+    const requestHeadersObj: Record<string, string> = {};
+    requestHeaders.forEach((value, key) => {
+      // Redact any secret values from headers before storing
+      requestHeadersObj[key] = redactSecrets(value, secrets);
+    });
+
+    // Truncate response body to 100KB for storage (roughly 100,000 chars)
+    const maxBodyLength = 100000;
+    const responseBodyToStore = responseText.length > maxBodyLength
+      ? responseText.substring(0, maxBodyLength) + "\n\n... [Response truncated]"
+      : responseText;
+    
+    // REDACT secrets from URL before storing
+    const redactedUrl = redactSecrets(targetUrl, secrets);
+    
+    // REDACT secrets from request body before storing
+    const redactedRequestBody = requestBody ? redactSecrets(requestBody, secrets) : null;
+
+    // Log execution to database (with secrets REDACTED)
     const { data: execution } = await supabaseClient
       .from("request_executions")
       .insert({
@@ -311,6 +387,11 @@ serve(async (req) => {
         response_excerpt: typeof responseData === "string" 
           ? responseData.substring(0, 500)
           : JSON.stringify(responseData).substring(0, 500),
+        response_body: responseBodyToStore,
+        response_headers: responseHeaders,
+        request_headers: requestHeadersObj,  // Already redacted
+        request_body: redactedRequestBody,    // Redacted
+        final_url: redactedUrl,               // Redacted
         error_message: httpError?.message || (!isSuccess ? `HTTP ${response.status}` : null),
         parameters_used: payload.parameters,
       })

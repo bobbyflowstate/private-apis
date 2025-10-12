@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowUpRight, Tag } from "lucide-react";
+import { ArrowUpRight, Tag, Edit2 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import type { FullRequest } from "@/lib/types/requests";
 
@@ -34,6 +34,13 @@ export function RequestHeader({ request }: RequestHeaderProps) {
           {request.description && <p className="max-w-2xl text-sm text-slate-400">{request.description}</p>}
         </div>
         <div className="flex items-center gap-2 text-xs">
+          <Link
+            href={`/requests/${request.id}/edit`}
+            className="inline-flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-slate-200 transition hover:border-brand-500 hover:bg-brand-500 hover:text-white"
+          >
+            <Edit2 className="h-3.5 w-3.5" />
+            Edit
+          </Link>
           <Link
             href="/settings"
             className="inline-flex items-center gap-1 rounded-lg border border-slate-700 px-3 py-1.5 text-slate-200 transition hover:border-brand-400 hover:text-brand-200"

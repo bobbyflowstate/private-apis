@@ -71,17 +71,23 @@ export function ExecutionHistoryTable() {
           </thead>
           <tbody className="divide-y divide-slate-800/80">
             {filtered.map((item) => (
-              <tr key={item.id} className="hover:bg-slate-900/60">
+              <tr key={item.id} className="group hover:bg-slate-900/60">
                 <td className="px-6 py-3">
                   <Link
-                    href={`/requests/${item.request_id}`}
-                    className="font-medium text-slate-200 hover:text-brand-200"
+                    href={`/history/${item.id}`}
+                    className="font-medium text-slate-200 transition hover:text-brand-200"
                   >
                     {item.request_id}
                   </Link>
                   {item.response_excerpt && (
                     <p className="mt-1 line-clamp-2 text-xs text-slate-500">{item.response_excerpt}</p>
                   )}
+                  <Link
+                    href={`/history/${item.id}`}
+                    className="mt-1 hidden text-xs text-brand-400 transition hover:text-brand-300 group-hover:inline-block"
+                  >
+                    View full details →
+                  </Link>
                 </td>
                 <td className="px-6 py-3">
                   <span
