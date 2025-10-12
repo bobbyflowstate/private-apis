@@ -1,0 +1,17 @@
+# Dependencies
+node_modules
+
+# Production
+.next
+out
+
+# Testing
+playwright-report
+coverage
+
+# Env files
+.env*
+.supabase
+
+# Misc
+.DS_Store
