@@ -33,10 +33,10 @@ async function RequestsList() {
         <Link
           key={request.id}
           href={`/requests/${request.id}`}
-          className="group flex items-center justify-between rounded-xl border border-slate-800/70 bg-slate-900/50 p-4 transition hover:border-brand-400/60 hover:bg-slate-900"
+          className="group flex w-full flex-wrap items-start justify-between gap-3 rounded-xl border border-slate-800/70 bg-slate-900/50 p-4 transition hover:border-brand-400/60 hover:bg-slate-900"
         >
-          <div className="flex-1">
-            <div className="flex items-center gap-3">
+          <div className="flex-1 min-w-0">
+            <div className="flex min-w-0 items-center gap-3">
               <span
                 className={`rounded-full border px-2 py-0.5 font-mono text-xs uppercase tracking-wide ${
                   request.method === "GET"
@@ -52,14 +52,14 @@ async function RequestsList() {
               >
                 {request.method}
               </span>
-              <h3 className="text-base font-semibold text-slate-100">{request.name}</h3>
+              <h3 className="truncate text-base font-semibold text-slate-100">{request.name}</h3>
             </div>
             {request.description && (
-              <p className="mt-1 text-sm text-slate-400">{request.description}</p>
+              <p className="mt-1 line-clamp-2 break-words text-sm text-slate-400">{request.description}</p>
             )}
-            <p className="mt-2 font-mono text-xs text-slate-500">{request.url}</p>
+            <p className="mt-2 break-all font-mono text-xs text-slate-500">{request.url}</p>
           </div>
-          <div className="text-sm text-slate-500">
+          <div className="shrink-0 text-right text-sm text-slate-500 sm:text-left">
             {request.updated_at
               ? new Date(request.updated_at).toLocaleDateString()
               : new Date(request.created_at).toLocaleDateString()}
