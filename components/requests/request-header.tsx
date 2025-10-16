@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { ArrowUpRight, Tag, Edit2 } from "lucide-react";
+import { ArrowUpRight, Tag, Edit2, Copy } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import type { FullRequest } from "@/lib/types/requests";
+import { DuplicateButton } from "./duplicate-button";
 
 interface RequestHeaderProps {
   request: FullRequest;
@@ -41,6 +42,7 @@ export function RequestHeader({ request }: RequestHeaderProps) {
             <Edit2 className="h-3.5 w-3.5" />
             Edit
           </Link>
+          <DuplicateButton requestId={request.id} />
           <Link
             href="/settings"
             className="inline-flex items-center gap-1 rounded-lg border border-slate-700 px-3 py-1.5 text-slate-200 transition hover:border-brand-400 hover:text-brand-200"

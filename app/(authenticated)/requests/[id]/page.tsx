@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { RequestHeader } from "@/components/requests/request-header";
 import { RequestConfiguration } from "@/components/requests/request-configuration";
 import { RequestExecutionPanel } from "@/components/requests/request-execution-panel";
-import { fetchRequestById } from "@/lib/api/requests";
+import { fetchApiRequestById } from "@/lib/api/requests";
 
 interface RequestDetailPageProps {
   params: {
@@ -12,7 +12,7 @@ interface RequestDetailPageProps {
 }
 
 export default async function RequestDetailPage({ params }: RequestDetailPageProps) {
-  const data = await fetchRequestById(params.id).catch(() => null);
+  const data = await fetchApiRequestById(params.id).catch(() => null);
 
   if (!data) {
     notFound();
