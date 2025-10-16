@@ -199,7 +199,7 @@ export function RequestExecutionPanel({ request }: RequestExecutionPanelProps) {
       {execute.data && (
         <div className="rounded-lg border border-emerald-500/60 bg-emerald-500/10 p-3 text-xs text-emerald-100">
           <p className="font-semibold">Response preview</p>
-          <pre className="mt-2 max-h-48 overflow-auto text-[11px]">
+          <pre className="mt-2 max-h-48 w-full max-w-full overflow-x-auto overflow-y-auto break-words whitespace-pre-wrap text-[11px]">
             {JSON.stringify(execute.data, null, 2)}
           </pre>
         </div>

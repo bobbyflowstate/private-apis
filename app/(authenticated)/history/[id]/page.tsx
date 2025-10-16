@@ -190,7 +190,7 @@ export default async function ExecutionDetailPage({ params }: ExecutionDetailPag
           <div>
             <h3 className="mb-2 text-sm font-medium text-slate-300">Request Headers</h3>
             <div className="rounded-lg border border-slate-800/70 bg-slate-900/50 px-4 py-3">
-              <pre className="text-xs text-slate-300">
+              <pre className="w-full max-w-full overflow-x-auto break-words whitespace-pre-wrap text-xs text-slate-300">
                 {JSON.stringify(execution.request_headers, null, 2)}
               </pre>
             </div>
@@ -212,7 +212,7 @@ export default async function ExecutionDetailPage({ params }: ExecutionDetailPag
           <div>
             <h3 className="mb-2 text-sm font-medium text-slate-300">Runtime Parameters</h3>
             <div className="rounded-lg border border-slate-800/70 bg-slate-900/50 px-4 py-3">
-              <pre className="text-xs text-slate-300">
+              <pre className="w-full max-w-full overflow-x-auto break-words whitespace-pre-wrap text-xs text-slate-300">
                 {JSON.stringify(execution.parameters_used, null, 2)}
               </pre>
             </div>
@@ -246,7 +246,7 @@ export default async function ExecutionDetailPage({ params }: ExecutionDetailPag
               )}
             </h3>
             <div className="max-h-96 overflow-auto rounded-lg border border-slate-800/70 bg-slate-900/50 px-4 py-3">
-              <pre className="text-xs text-slate-300">{formattedResponseBody}</pre>
+              <pre className="w-full max-w-full overflow-x-auto break-words whitespace-pre-wrap text-xs text-slate-300">{formattedResponseBody}</pre>
             </div>
           </div>
         )}
