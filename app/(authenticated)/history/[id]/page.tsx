@@ -100,7 +100,7 @@ export default async function ExecutionDetailPage({ params }: ExecutionDetailPag
   );
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-6xl min-w-0 flex-col gap-6">
       {/* Header */}
       <header className="space-y-3">
         <div className="flex items-center gap-4">
@@ -226,10 +226,10 @@ export default async function ExecutionDetailPage({ params }: ExecutionDetailPag
 
         {/* Response Headers */}
         {execution.response_headers && Object.keys(execution.response_headers as Record<string, string>).length > 0 && (
-          <div>
+          <div className="min-w-0">
             <h3 className="mb-2 text-sm font-medium text-slate-300">Response Headers</h3>
-            <div className="rounded-lg border border-slate-800/70 bg-slate-900/50 px-4 py-3">
-              <pre className="text-xs text-slate-300">
+            <div className="-mx-4 overflow-x-auto rounded-lg border border-slate-800/70 bg-slate-900/50 px-4 py-3 sm:mx-0 sm:px-4">
+              <pre className="w-full max-w-full break-words whitespace-pre-wrap text-xs text-slate-300">
                 {JSON.stringify(execution.response_headers, null, 2)}
               </pre>
             </div>
