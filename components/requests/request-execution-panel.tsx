@@ -77,12 +77,6 @@ export function RequestExecutionPanel({ request }: RequestExecutionPanelProps) {
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    // Build payload for Edge Function
-    const payload: Record<string, any> = {
-      requestId: request.id,
-      parameters: {}, // For placeholder substitution
-    };
-
     // Separate runtime values by type
     const runtimeHeaders: Record<string, string> = {};
     const runtimeQueryParams: Record<string, string> = {};
@@ -105,16 +99,14 @@ export function RequestExecutionPanel({ request }: RequestExecutionPanelProps) {
       }
     });
 
-    // Add runtime values to payload (separate from parameters)
-    if (Object.keys(runtimeHeaders).length > 0) {
-      payload.runtimeHeaders = runtimeHeaders;
-    }
-    if (Object.keys(runtimeQueryParams).length > 0) {
-      payload.runtimeQueryParams = runtimeQueryParams;
-    }
-    if (runtimeBody !== null) {
-      payload.runtimeBody = runtimeBody;
-    }
+    // Build payload for Edge Function
+    const payload = {
+      requestId: request.id,
+      parameters: {}, // For placeholder substitution
+      ...(Object.keys(runtimeHeaders).length > 0 && { runtimeHeaders }),
+      ...(Object.keys(runtimeQueryParams).length > 0 && { runtimeQueryParams }),
+      ...(runtimeBody !== null && { runtimeBody }),
+    };
 
     await execute.mutateAsync(payload);
   }

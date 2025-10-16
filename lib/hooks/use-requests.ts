@@ -56,6 +56,9 @@ export function useExecuteRequest() {
     mutationFn: async (payload: {
       requestId: string;
       parameters: Record<string, Json>;
+      runtimeHeaders?: Record<string, string>;
+      runtimeQueryParams?: Record<string, string>;
+      runtimeBody?: any;
     }) => {
       const { data, error } = await supabase.functions.invoke("execute_request", {
         body: payload,

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useSupabase } from "@/lib/hooks/use-supabase";
 import Link from "next/link";
 import { ArrowLeftIcon, PlusIcon, XIcon, Loader2 } from "lucide-react";
+import type { RuntimePrompts } from "@/lib/types/requests";
 
 interface KeyValuePair {
   id: string;
@@ -79,8 +80,9 @@ export default function EditRequestPage({ params }: EditRequestPageProps) {
             });
           }
           // Add runtime headers
-          if (data.runtime_prompts?.headers) {
-            (data.runtime_prompts.headers as string[]).forEach((key) => {
+          const runtimePrompts = data.runtime_prompts as RuntimePrompts | null;
+          if (runtimePrompts?.headers) {
+            runtimePrompts.headers.forEach((key) => {
               headersArray.push({
                 id: crypto.randomUUID(),
                 key,
@@ -107,8 +109,8 @@ export default function EditRequestPage({ params }: EditRequestPageProps) {
             });
           }
           // Add runtime query params
-          if (data.runtime_prompts?.queryParams) {
-            (data.runtime_prompts.queryParams as string[]).forEach((key) => {
+          if (runtimePrompts?.queryParams) {
+            runtimePrompts.queryParams.forEach((key) => {
               queryParamsArray.push({
                 id: crypto.randomUUID(),
                 key,
@@ -126,7 +128,7 @@ export default function EditRequestPage({ params }: EditRequestPageProps) {
           if (data.body_template) {
             setBody(JSON.stringify(data.body_template, null, 2));
             setBodyPromptAtRuntime(false);
-          } else if (data.runtime_prompts?.body) {
+          } else if (runtimePrompts?.body) {
             setBody("");
             setBodyPromptAtRuntime(true);
           }

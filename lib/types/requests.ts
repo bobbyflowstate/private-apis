@@ -11,9 +11,9 @@ export interface RuntimePrompts {
   body?: boolean;
 }
 
-export interface FullRequest extends RequestRow {
+export interface FullRequest extends Omit<RequestRow, 'runtime_prompts'> {
   request_parameters?: RequestParameterRow[];
   request_executions?: RequestExecutionRow[];
   api_categories?: CategoryRow | null;
-  runtime_prompts?: RuntimePrompts;
+  runtime_prompts?: RuntimePrompts | null;
 }
