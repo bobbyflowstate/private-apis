@@ -52,8 +52,11 @@ export async function middleware(request: NextRequest) {
   }
 
   // If user is signed in and trying to access sign-in page, redirect to dashboard
-  // Allow forgot-password and reset-password pages even when logged in
-  if (user && request.nextUrl.pathname === "/auth/sign-in") {
+  // Allow forgot-password, reset-password, and callback pages even when logged in
+  if (
+    user &&
+    request.nextUrl.pathname === "/auth/sign-in"
+  ) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
