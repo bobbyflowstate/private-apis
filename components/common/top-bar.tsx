@@ -41,11 +41,11 @@ export function TopBar({ email }: TopBarProps) {
   }
 
   return (
-    <header className="sticky top-0 z-30 hidden items-center justify-between border-b border-slate-800/70 bg-slate-950/70 px-6 py-4 lg:flex">
-      <div className="text-sm text-slate-400">
+    <header className="sticky top-0 z-30 hidden flex-wrap items-center justify-between gap-2 border-b border-slate-800/70 bg-slate-950/70 px-6 py-4 lg:flex">
+      <div className="min-w-0 text-sm text-slate-400">
         <span className="font-medium text-slate-200">Welcome back,</span> {email}
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <button
           type="button"
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}

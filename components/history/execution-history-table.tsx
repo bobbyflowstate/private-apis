@@ -59,28 +59,28 @@ export function ExecutionHistoryTable() {
         </div>
       </header>
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-slate-800 text-sm">
+        <table className="min-w-full table-fixed divide-y divide-slate-800 text-sm">
           <thead className="bg-slate-900/80 text-xs uppercase text-slate-500">
             <tr>
-              <th className="px-6 py-3 text-left font-medium">Request</th>
-              <th className="px-6 py-3 text-left font-medium">Status</th>
-              <th className="px-6 py-3 text-left font-medium">HTTP</th>
-              <th className="px-6 py-3 text-left font-medium">Duration</th>
-              <th className="px-6 py-3 text-left font-medium">Run at</th>
+              <th className="px-3 py-3 text-left font-medium sm:px-6">Request</th>
+              <th className="px-3 py-3 text-left font-medium sm:px-6">Status</th>
+              <th className="px-3 py-3 text-left font-medium sm:px-6">HTTP</th>
+              <th className="px-3 py-3 text-left font-medium sm:px-6">Duration</th>
+              <th className="px-3 py-3 text-left font-medium sm:px-6">Run at</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800/80">
             {filtered.map((item) => (
               <tr key={item.id} className="group hover:bg-slate-900/60">
-                <td className="px-6 py-3">
+                <td className="px-3 py-3 align-top sm:px-6">
                   <Link
                     href={`/history/${item.id}`}
                     className="font-medium text-slate-200 transition hover:text-brand-200"
                   >
-                    {item.request_id}
+                    <span className="break-all">{item.request_id}</span>
                   </Link>
                   {item.response_excerpt && (
-                    <p className="mt-1 line-clamp-2 text-xs text-slate-500">{item.response_excerpt}</p>
+                    <p className="mt-1 line-clamp-2 break-words text-xs text-slate-500">{item.response_excerpt}</p>
                   )}
                   <Link
                     href={`/history/${item.id}`}
@@ -89,7 +89,7 @@ export function ExecutionHistoryTable() {
                     View full details →
                   </Link>
                 </td>
-                <td className="px-6 py-3">
+                <td className="px-3 py-3 align-top sm:px-6">
                   <span
                     className={cn(
                       "rounded-full border px-2 py-0.5 text-xs uppercase",
@@ -102,20 +102,20 @@ export function ExecutionHistoryTable() {
                     {item.status}
                   </span>
                 </td>
-                <td className="px-6 py-3">
+                <td className="px-3 py-3 align-top sm:px-6">
                   {item.http_status ? <span>{item.http_status}</span> : <span className="text-slate-500">—</span>}
                 </td>
-                <td className="px-6 py-3">
+                <td className="px-3 py-3 align-top sm:px-6">
                   {item.duration_ms ? `${item.duration_ms} ms` : <span className="text-slate-500">—</span>}
                 </td>
-                <td className="px-6 py-3 text-slate-400">
+                <td className="px-3 py-3 align-top text-slate-400 sm:px-6">
                   {new Date(item.executed_at).toLocaleString()}
                 </td>
               </tr>
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-6 py-8 text-center text-sm text-slate-400">
+                <td colSpan={5} className="px-3 py-8 text-center text-sm text-slate-400 sm:px-6">
                   No executions match the selected filter.
                 </td>
               </tr>

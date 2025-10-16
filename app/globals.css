@@ -17,3 +17,13 @@ body.light {
 main {
   @apply min-h-screen;
 }
+
+/* Global safety rails for media and layout */
+img, svg, video {
+  max-width: 100%;
+  height: auto;
+}
+
+.content-wrap {
+  min-width: 0; /* Allows flex children to shrink instead of overflow */
+}

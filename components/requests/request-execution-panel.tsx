@@ -137,13 +137,13 @@ export function RequestExecutionPanel({ request }: RequestExecutionPanelProps) {
                 <span className="text-xs text-slate-500">runtime</span>
               </label>
               
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-2 sm:flex-row">
                 {field.type === "body" ? (
                   <textarea
                     id={field.key}
                     name={field.key}
                     rows={6}
-                    className="flex-1 rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 font-mono text-sm text-slate-100 placeholder:text-slate-600 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
+                    className="min-h-[160px] w-full flex-1 rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 font-mono text-sm text-slate-100 placeholder:text-slate-600 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
                     placeholder='{"key": "value"}'
                     value={formState[field.key] || ""}
                     onChange={(event) => handleChange(field.key, event.target.value)}
@@ -153,7 +153,7 @@ export function RequestExecutionPanel({ request }: RequestExecutionPanelProps) {
                     id={field.key}
                     name={field.key}
                     type="text"
-                    className="flex-1 rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 font-mono text-sm text-slate-100 placeholder:text-slate-600 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
+                    className="w-full flex-1 rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 font-mono text-sm text-slate-100 placeholder:text-slate-600 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500/50"
                     placeholder={`Enter ${field.label.toLowerCase()}`}
                     value={formState[field.key] || ""}
                     onChange={(event) => handleChange(field.key, event.target.value)}

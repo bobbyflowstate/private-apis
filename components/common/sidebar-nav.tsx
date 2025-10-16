@@ -56,14 +56,14 @@ export function SidebarNav({ email }: SidebarNavProps) {
               key={item.href}
               href={item.href}
               className={cn(
-                "group flex items-center gap-3 rounded-lg px-3 py-2 font-medium text-slate-400 transition",
+                "group flex min-w-0 items-center gap-3 rounded-lg px-3 py-2 font-medium text-slate-400 transition",
                 isActive && "bg-slate-800/60 text-slate-100",
                 !isActive && "hover:bg-slate-800/40 hover:text-slate-100",
                 collapsed && "justify-center px-2"
               )}
             >
-              <Icon className="h-5 w-5" />
-              {!collapsed && <span>{item.name}</span>}
+              <Icon className="h-5 w-5 shrink-0" />
+              {!collapsed && <span className="truncate">{item.name}</span>}
             </Link>
           );
         })}

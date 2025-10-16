@@ -31,10 +31,10 @@ export function RequestHeader({ request }: RequestHeaderProps) {
       </div>
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-2">
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-100">{request.name}</h1>
-          {request.description && <p className="max-w-2xl text-sm text-slate-400">{request.description}</p>}
+          <h1 className="text-3xl font-semibold tracking-tight text-slate-100 break-words">{request.name}</h1>
+          {request.description && <p className="max-w-2xl break-words text-sm text-slate-400">{request.description}</p>}
         </div>
-        <div className="flex items-center gap-2 text-xs">
+        <div className="flex flex-wrap items-center gap-2 text-xs">
           <Link
             href={`/requests/${request.id}/edit`}
             className="inline-flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-slate-200 transition hover:border-brand-500 hover:bg-brand-500 hover:text-white"
