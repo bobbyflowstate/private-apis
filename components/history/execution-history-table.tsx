@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useHistory } from "@/lib/hooks/use-history";
 import { cn } from "@/lib/utils/cn";
 
@@ -9,6 +10,7 @@ const statusFilters = ["all", "success", "failure", "error", "timeout"] as const
 
 export function ExecutionHistoryTable() {
   const { data, isLoading, isError, error } = useHistory();
+  const router = useRouter();
   const [filter, setFilter] = useState<(typeof statusFilters)[number]>("all");
 
   const filtered = useMemo(() => {
@@ -71,7 +73,19 @@ export function ExecutionHistoryTable() {
           </thead>
           <tbody className="divide-y divide-slate-800/80">
             {filtered.map((item) => (
-              <tr key={item.id} className="group hover:bg-slate-900/60">
+              <tr
+                key={item.id}
+                className="group cursor-pointer hover:bg-slate-900/60"
+                onClick={() => router.push(`/history/${item.id}`)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    router.push(`/history/${item.id}`);
+                  }
+                }}
+              >
                 <td className="px-3 py-3 align-top sm:px-6">
                   <Link
                     href={`/history/${item.id}`}
