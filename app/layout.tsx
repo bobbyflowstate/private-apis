@@ -18,7 +18,10 @@ export const metadata: Metadata = {
       { url: "/icons/icon-192.png", type: "image/png", sizes: "192x192" },
       { url: "/icons/icon-512.png", type: "image/png", sizes: "512x512" }
     ],
-    apple: "/icons/icon-192.png",
+    // iOS home screen icon relies on apple-touch-icon; prefer 180x180
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }
+    ],
     shortcut: "/logo.png",
   },
 };
