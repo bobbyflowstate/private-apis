@@ -12,9 +12,6 @@ export default function DashboardPage() {
           Quick access to your most used API requests and recent activity.
         </p>
       </header>
-      <Suspense fallback={<div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6">Loading overview...</div>}>
-        <DashboardOverview />
-      </Suspense>
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <div className="space-y-6 xl:col-span-2">
           <Suspense fallback={<div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6">Loading favourites...</div>}>
@@ -27,6 +24,9 @@ export default function DashboardPage() {
           </Suspense>
         </div>
       </div>
+      <Suspense fallback={<div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6">Loading overview...</div>}>
+        <DashboardOverview />
+      </Suspense>
     </div>
   );
 }
