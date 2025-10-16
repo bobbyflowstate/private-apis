@@ -8,6 +8,12 @@
   "description": "Securely manage and execute your private API workflows on any device.",
   "icons": [
     {
+      "src": "/logo.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
       "src": "/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
