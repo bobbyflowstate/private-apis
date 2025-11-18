@@ -1,16 +1,16 @@
 import Link from "next/link";
-import { fetchApiRequests } from "@/lib/api/requests";
+import { fetchFavoriteApiRequests } from "@/lib/api/requests";
 import { cn } from "@/lib/utils/cn";
 import { PlusIcon } from "lucide-react";
 
 export async function FavoriteRequests() {
-  const requests = await fetchApiRequests();
-  const items = (requests ?? []).slice(0, 6);
+  const requests = await fetchFavoriteApiRequests();
+  const items = requests ?? [];
 
   if (items.length === 0) {
     return (
       <section className="rounded-xl border border-dashed border-slate-700 bg-slate-900/40 p-8 text-center">
-        <p className="text-sm text-slate-400">No requests yet. Create your first API request to get started.</p>
+        <p className="text-sm text-slate-400">Mark a request as a favorite to have it appear here for quick access.</p>
         <Link
           href="/requests/new"
           className="mt-4 inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-400"
@@ -26,14 +26,14 @@ export async function FavoriteRequests() {
     <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-6">
       <header className="flex items-center justify-between gap-4">
         <div>
-          <h2 className="text-lg font-semibold text-slate-100">Quick launch</h2>
-          <p className="text-xs text-slate-500">Your most recently updated requests</p>
+          <h2 className="text-lg font-semibold text-slate-100">Favorites</h2>
+          <p className="text-xs text-slate-500">Pinned requests you use the most</p>
         </div>
-        <Link className="text-xs text-brand-300 hover:text-brand-200" href="/settings">
-          Manage
+        <Link className="text-xs text-brand-300 hover:text-brand-200" href="/requests">
+          View all requests
         </Link>
       </header>
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+      <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((request) => {
           const lastUpdated = request.updated_at ?? request.created_at ?? new Date().toISOString();
           return (

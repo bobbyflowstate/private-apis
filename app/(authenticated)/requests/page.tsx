@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { fetchApiRequests } from "@/lib/api/requests";
 import { PlusIcon } from "lucide-react";
+import { FavoriteToggleButton } from "@/components/requests/favorite-toggle-button";
 
 async function RequestsList() {
   const requests = await fetchApiRequests();
@@ -29,43 +30,48 @@ async function RequestsList() {
 
   return (
     <div className="space-y-3">
-      {requests.map((request) => (
-        <Link
-          key={request.id}
-          href={`/requests/${request.id}`}
-          className="group flex w-full flex-wrap items-start justify-between gap-3 rounded-xl border border-slate-800/70 bg-slate-900/50 p-4 transition hover:border-brand-400/60 hover:bg-slate-900"
-        >
-          <div className="flex-1 min-w-0">
-            <div className="flex min-w-0 items-center gap-3">
-              <span
-                className={`rounded-full border px-2 py-0.5 font-mono text-xs uppercase tracking-wide ${
-                  request.method === "GET"
-                    ? "border-sky-500/60 text-sky-300"
-                    : request.method === "POST"
-                    ? "border-emerald-500/60 text-emerald-300"
-                    : request.method === "PUT"
-                    ? "border-amber-500/60 text-amber-300"
-                    : request.method === "DELETE"
-                    ? "border-red-500/60 text-red-300"
-                    : "border-slate-700 text-slate-300"
-                }`}
-              >
-                {request.method}
-              </span>
-              <h3 className="truncate text-base font-semibold text-slate-100">{request.name}</h3>
+      {requests.map((request) => {
+        const lastUpdated = request.updated_at ?? request.created_at;
+        return (
+          <article
+            key={request.id}
+            className="group w-full rounded-xl border border-slate-800/70 bg-slate-900/50 p-4 transition hover:border-brand-400/60 hover:bg-slate-900"
+          >
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <Link href={`/requests/${request.id}`} className="flex-1 min-w-0">
+                <div className="flex min-w-0 items-center gap-3">
+                  <span
+                    className={`rounded-full border px-2 py-0.5 font-mono text-xs uppercase tracking-wide ${
+                      request.method === "GET"
+                        ? "border-sky-500/60 text-sky-300"
+                        : request.method === "POST"
+                        ? "border-emerald-500/60 text-emerald-300"
+                        : request.method === "PUT"
+                        ? "border-amber-500/60 text-amber-300"
+                        : request.method === "DELETE"
+                        ? "border-red-500/60 text-red-300"
+                        : "border-slate-700 text-slate-300"
+                    }`}
+                  >
+                    {request.method}
+                  </span>
+                  <h3 className="truncate text-base font-semibold text-slate-100">{request.name}</h3>
+                </div>
+                {request.description && (
+                  <p className="mt-1 line-clamp-2 break-words text-sm text-slate-400">{request.description}</p>
+                )}
+                <p className="mt-2 break-all font-mono text-xs text-slate-500">{request.url}</p>
+              </Link>
+              <div className="flex flex-col items-start gap-2 text-xs text-slate-500 sm:items-end">
+                <FavoriteToggleButton requestId={request.id} initialIsFavorite={request.is_favorite ?? false} />
+                <span>
+                  Updated {lastUpdated ? new Date(lastUpdated).toLocaleDateString() : "--"}
+                </span>
+              </div>
             </div>
-            {request.description && (
-              <p className="mt-1 line-clamp-2 break-words text-sm text-slate-400">{request.description}</p>
-            )}
-            <p className="mt-2 break-all font-mono text-xs text-slate-500">{request.url}</p>
-          </div>
-          <div className="shrink-0 text-right text-sm text-slate-500 sm:text-left">
-            {request.updated_at
-              ? new Date(request.updated_at).toLocaleDateString()
-              : new Date(request.created_at).toLocaleDateString()}
-          </div>
-        </Link>
-      ))}
+          </article>
+        );
+      })}
     </div>
   );
 }

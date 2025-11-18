@@ -45,7 +45,8 @@ export function MobileNav({ email }: MobileNavProps) {
         <nav className="space-y-1 border-b border-slate-800/80 bg-slate-950/80 px-4 py-4 text-sm">
           {navigationLinks.map((item) => {
             const Icon = getIconComponent(item.icon);
-            const isActive = pathname?.startsWith(item.href);
+            const isActive =
+              item.href === "/" ? pathname === "/" : pathname?.startsWith(item.href);
             return (
               <Link
                 key={item.href}
