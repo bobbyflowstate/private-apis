@@ -82,6 +82,7 @@ export type Database = {
           created_at: string
           description: string | null
           headers: Json | null
+          is_favorite: boolean
           id: string
           method: string
           name: string
@@ -101,6 +102,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           headers?: Json | null
+          is_favorite?: boolean
           id?: string
           method: string
           name: string
@@ -120,6 +122,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           headers?: Json | null
+          is_favorite?: boolean
           id?: string
           method?: string
           name?: string

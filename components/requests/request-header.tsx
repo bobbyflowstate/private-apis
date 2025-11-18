@@ -3,6 +3,7 @@ import { ArrowUpRight, Tag, Edit2, Copy } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import type { FullRequest } from "@/lib/types/requests";
 import { DuplicateButton } from "./duplicate-button";
+import { FavoriteToggleButton } from "./favorite-toggle-button";
 
 interface RequestHeaderProps {
   request: FullRequest;
@@ -35,6 +36,11 @@ export function RequestHeader({ request }: RequestHeaderProps) {
           {request.description && <p className="max-w-2xl break-words text-sm text-slate-400">{request.description}</p>}
         </div>
         <div className="flex flex-wrap items-center gap-2 text-xs">
+          <FavoriteToggleButton
+            requestId={request.id}
+            initialIsFavorite={request.is_favorite ?? false}
+            variant="solid"
+          />
           <Link
             href={`/requests/${request.id}/edit`}
             className="inline-flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-slate-200 transition hover:border-brand-500 hover:bg-brand-500 hover:text-white"

@@ -6,10 +6,30 @@ export async function fetchApiRequests() {
   const { data, error } = await supabase
     .from("api_requests")
     .select("*")
+    .order("is_favorite", { ascending: false })
+    .order("updated_at", { ascending: false })
     .order("created_at", { ascending: false });
 
   if (error) {
     console.error("Failed to fetch API requests:", error);
+    return null;
+  }
+
+  return data;
+}
+
+export async function fetchFavoriteApiRequests(limit = 12) {
+  const supabase = getServerClient();
+  const { data, error } = await supabase
+    .from("api_requests")
+    .select("*")
+    .eq("is_favorite", true)
+    .order("updated_at", { ascending: false })
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error("Failed to fetch favorite API requests:", error);
     return null;
   }
 
@@ -65,6 +85,7 @@ export async function duplicateApiRequest(id: string, ownerId: string): Promise<
       secret_bindings: original.secret_bindings,
       requires_confirmation: original.requires_confirmation,
       runtime_prompts: original.runtime_prompts,
+      is_favorite: false,
     })
     .select("id")
     .single();

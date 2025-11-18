@@ -50,7 +50,8 @@ export function SidebarNav({ email }: SidebarNavProps) {
       <nav className="mt-8 flex-1 space-y-1 text-sm">
         {navigationLinks.map((item) => {
           const Icon = getIconComponent(item.icon);
-          const isActive = pathname?.startsWith(item.href);
+          const isActive =
+            item.href === "/" ? pathname === "/" : pathname?.startsWith(item.href);
           return (
             <Link
               key={item.href}
