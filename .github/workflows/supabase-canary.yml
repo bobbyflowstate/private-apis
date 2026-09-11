@@ -1,0 +1,65 @@
+name: Supabase canary
+
+# Free-tier Supabase projects occasionally wedge (Postgres up, every query
+# 10-40s, gateway 504s). This probes every 15 minutes and restarts the
+# project when two probes a minute apart both fail. A restart makes the run
+# fail on purpose so GitHub emails you, and files an issue with the details.
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Probe and report, but never restart"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: supabase-canary
+  cancel-in-progress: false
+
+jobs:
+  canary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Probe (and restart if wedged)
+        id: canary
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_PROJECT_REF: tujsydebjyxpzrgwfwvy
+          DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
+        run: bash scripts/supabase-canary.sh
+        continue-on-error: true
+
+      - name: File an issue if a restart happened
+        if: steps.canary.outcome == 'failure' && steps.canary.outputs.outcome != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OUTCOME: ${{ steps.canary.outputs.outcome }}
+          DETAIL: ${{ steps.canary.outputs.detail }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ "$OUTCOME" = "restarted" ]; then
+            title="Supabase canary restarted the project ($(date -u +%Y-%m-%d\ %H:%M) UTC)"
+          else
+            title="Supabase project still down after canary restart ($(date -u +%Y-%m-%d\ %H:%M) UTC)"
+          fi
+          gh issue create \
+            --title "$title" \
+            --label supabase-canary \
+            --body "$(printf '%s\n\nRun: %s\n\nIf this keeps happening, check https://status.supabase.com for a Nano-tier incident.' "$DETAIL" "$RUN_URL")"
+
+      - name: Surface the result
+        if: steps.canary.outcome == 'failure'
+        run: |
+          echo "::error::Supabase canary took action or hit an error. See the probe step above."
+          exit 1
