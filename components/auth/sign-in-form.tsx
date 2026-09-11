@@ -23,7 +23,13 @@ export function SignInForm() {
     });
 
     if (signInError) {
-      setError(signInError.message);
+      // A paused or unreachable Supabase project surfaces as an opaque
+      // "Failed to fetch" -- say what actually happened instead.
+      setError(
+        signInError.name === "AuthRetryableFetchError"
+          ? "Can't reach the authentication service. It may be paused or offline — try again in a moment."
+          : signInError.message
+      );
       setLoading(false);
       return;
     }

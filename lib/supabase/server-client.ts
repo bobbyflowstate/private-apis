@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/types/database";
+import { fetchWithTimeout } from "@/lib/supabase/fetch-with-timeout";
 
 export function getServerClient(): SupabaseClient<Database> {
   const cookieStore = cookies();
@@ -25,6 +26,9 @@ export function getServerClient(): SupabaseClient<Database> {
             // user sessions.
           }
         },
+      },
+      global: {
+        fetch: fetchWithTimeout,
       },
     }
   );

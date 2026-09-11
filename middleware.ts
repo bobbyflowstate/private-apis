@@ -1,5 +1,17 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import {
+  fetchWithTimeout,
+  isSupabaseUnreachable,
+} from "@/lib/supabase/fetch-with-timeout";
+
+const PROTECTED_PREFIXES = ["/dashboard", "/requests", "/history", "/settings"];
+
+function redirectToSignIn(request: NextRequest, reason?: string) {
+  const url = new URL("/auth/sign-in", request.url);
+  if (reason) url.searchParams.set("error", reason);
+  return NextResponse.redirect(url);
+}
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -26,6 +38,9 @@ export async function middleware(request: NextRequest) {
           );
         },
       },
+      global: {
+        fetch: fetchWithTimeout,
+      },
     }
   );
 
@@ -33,30 +48,41 @@ export async function middleware(request: NextRequest) {
   // supabase.auth.getUser(). A simple mistake could make it very hard to debug
   // issues with users being randomly logged out.
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let user = null;
+  let authUnreachable = false;
+
+  try {
+    const { data, error } = await supabase.auth.getUser();
+    user = data.user;
+    if (error && isSupabaseUnreachable(error)) {
+      authUnreachable = true;
+    }
+  } catch (error) {
+    authUnreachable = true;
+  }
+
+  const isProtected = PROTECTED_PREFIXES.some((prefix) =>
+    request.nextUrl.pathname.startsWith(prefix)
+  );
+
+  // The auth server is unreachable, so we can't say whether this visitor is
+  // signed in. Their session is probably still valid, so leave cookies alone:
+  // keep public pages serving, and send protected routes to a sign-in page
+  // that explains the outage rather than silently claiming they're logged out.
+  if (authUnreachable) {
+    return isProtected
+      ? redirectToSignIn(request, "auth_unavailable")
+      : supabaseResponse;
+  }
 
   // Protected routes - redirect to sign-in if not authenticated
-  if (!user && request.nextUrl.pathname.startsWith("/dashboard")) {
-    return NextResponse.redirect(new URL("/auth/sign-in", request.url));
-  }
-  if (!user && request.nextUrl.pathname.startsWith("/requests")) {
-    return NextResponse.redirect(new URL("/auth/sign-in", request.url));
-  }
-  if (!user && request.nextUrl.pathname.startsWith("/history")) {
-    return NextResponse.redirect(new URL("/auth/sign-in", request.url));
-  }
-  if (!user && request.nextUrl.pathname.startsWith("/settings")) {
-    return NextResponse.redirect(new URL("/auth/sign-in", request.url));
+  if (!user && isProtected) {
+    return redirectToSignIn(request);
   }
 
   // If user is signed in and trying to access sign-in page, redirect to dashboard
   // Allow forgot-password, reset-password, and callback pages even when logged in
-  if (
-    user &&
-    request.nextUrl.pathname === "/auth/sign-in"
-  ) {
+  if (user && request.nextUrl.pathname === "/auth/sign-in") {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
@@ -75,4 +101,3 @@ export const config = {
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
-
