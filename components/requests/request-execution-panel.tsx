@@ -1,14 +1,69 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import Link from "next/link";
 import { Play, Loader2, Clipboard } from "lucide-react";
+import { ResponseViewer } from "@/components/common/response-viewer";
 import { useExecuteRequest } from "@/lib/hooks/use-requests";
 import type { FullRequest } from "@/lib/types/requests";
+import type { Database } from "@/lib/types/database";
+import { cn } from "@/lib/utils/cn";
 
 interface RuntimeField {
   type: "header" | "queryParam" | "body";
   key: string;
   label: string;
+}
+
+type ExecutionStatus = Database["public"]["Enums"]["request_status"];
+
+interface ExecutionResultData {
+  success: boolean;
+  status: ExecutionStatus;
+  executionId?: string;
+  httpStatus?: number;
+  duration?: number;
+  data?: unknown;
+  error?: string;
+}
+
+const STATUS_CLASSES: Record<ExecutionStatus, string> = {
+  success: "border-emerald-500/60 bg-emerald-500/10 text-emerald-300",
+  failure: "border-red-500/60 bg-red-500/10 text-red-300",
+  error: "border-red-500/60 bg-red-500/10 text-red-300",
+  timeout: "border-amber-500/60 bg-amber-500/10 text-amber-300",
+};
+
+function ExecutionResult({ result }: { result: ExecutionResultData }) {
+  const badgeClass = "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold";
+
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className={cn(badgeClass, "uppercase tracking-wide", STATUS_CLASSES[result.status] ?? STATUS_CLASSES.error)}>
+          {result.status}
+        </span>
+        {/* On timeouts and network errors the edge function reports a made-up status code */}
+        {result.httpStatus !== undefined && !result.error && (
+          <span className={cn(badgeClass, "font-mono", result.success ? "border-slate-700 text-slate-200" : "border-red-500/60 text-red-300")}>
+            HTTP {result.httpStatus}
+          </span>
+        )}
+        {result.duration !== undefined && (
+          <span className={cn(badgeClass, "border-slate-700 font-mono font-medium text-slate-300")}>{result.duration} ms</span>
+        )}
+        {result.executionId && (
+          <Link href={`/history/${result.executionId}`} className="ml-auto text-xs text-slate-400 hover:text-slate-200">
+            View in history
+          </Link>
+        )}
+      </div>
+      {result.error && (
+        <p className="rounded-lg border border-red-500/60 bg-red-500/10 p-3 text-xs text-red-200">{result.error}</p>
+      )}
+      {result.data !== undefined && result.data !== "" && <ResponseViewer value={result.data} />}
+    </div>
+  );
 }
 
 interface RequestExecutionPanelProps {
@@ -108,7 +163,11 @@ export function RequestExecutionPanel({ request }: RequestExecutionPanelProps) {
       ...(runtimeBody !== null && { runtimeBody }),
     };
 
-    await execute.mutateAsync(payload);
+    try {
+      await execute.mutateAsync(payload);
+    } catch {
+      // Surfaced through execute.isError below
+    }
   }
 
   return (
@@ -196,14 +255,7 @@ export function RequestExecutionPanel({ request }: RequestExecutionPanelProps) {
         </div>
       )}
 
-      {execute.data && (
-        <div className="rounded-lg border border-emerald-500/60 bg-emerald-500/10 p-3 text-xs text-emerald-100">
-          <p className="font-semibold">Response preview</p>
-          <pre className="mt-2 max-h-48 w-full max-w-full overflow-x-auto overflow-y-auto break-words whitespace-pre-wrap text-[11px]">
-            {JSON.stringify(execute.data, null, 2)}
-          </pre>
-        </div>
-      )}
+      {execute.data && <ExecutionResult result={execute.data} />}
     </section>
   );
 }

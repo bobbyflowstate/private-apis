@@ -4,6 +4,7 @@ import { ArrowLeftIcon, CheckCircle2, XCircle, AlertCircle, Clock } from "lucide
 import { getServerClient } from "@/lib/supabase/server-client";
 import { requireAuth } from "@/lib/auth/require-auth";
 import { cn } from "@/lib/utils/cn";
+import { ResponseViewer } from "@/components/common/response-viewer";
 
 interface ExecutionDetailPageProps {
   params: {
@@ -35,17 +36,6 @@ export default async function ExecutionDetailPage({ params }: ExecutionDetailPag
   }
 
   const request = execution.api_requests as any;
-
-  // Format response body for display
-  let formattedResponseBody = execution.response_body || "";
-  try {
-    if (formattedResponseBody) {
-      const parsed = JSON.parse(formattedResponseBody);
-      formattedResponseBody = JSON.stringify(parsed, null, 2);
-    }
-  } catch {
-    // Keep as-is if not JSON
-  }
 
   // Format request body for display
   let formattedRequestBody = execution.request_body || "";
@@ -245,9 +235,7 @@ export default async function ExecutionDetailPage({ params }: ExecutionDetailPag
                 <span className="ml-2 text-xs font-normal text-amber-400">(truncated to 100KB)</span>
               )}
             </h3>
-            <div className="max-h-96 overflow-auto rounded-lg border border-slate-800/70 bg-slate-900/50 px-4 py-3">
-              <pre className="w-full max-w-full overflow-x-auto break-words whitespace-pre-wrap text-xs text-slate-300">{formattedResponseBody}</pre>
-            </div>
+            <ResponseViewer text={execution.response_body} />
           </div>
         )}
       </div>
