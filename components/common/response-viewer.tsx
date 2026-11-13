@@ -446,7 +446,7 @@ export function ResponseViewer({ value, text, className }: ResponseViewerProps) 
           {view === "table" && primaryTable && <JsonTable rows={primaryTable.rows} stickyHeader />}
           {view === "tree" && (
             <div className="p-2 font-mono text-sm">
-              <TreeNode value={body.parsed} depth={0} defaultDepth={2} />
+              <TreeNode value={body.parsed} depth={0} defaultDepth={Infinity} />
             </div>
           )}
           {view === "raw" && <RawView body={body} />}
